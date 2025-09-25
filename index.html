@@ -1,31 +1,108 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Калькулятор ФОП та Зарплати 2025</title>
-  <meta name="description" content="Онлайн-калькулятор ФОП та зарплати в Україні 2025: розрахунок податків, чистої зарплати та витрат роботодавця.">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f7f7f7; }
+    :root {
+      --bg: #1f1f1f;
+      --bg-card: #2b2b2b;
+      --text: #eeeeee;
+      --text-inv: #222222;
+      --accent: #4da5ff;
+      --accent-hover: #3390ff;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
     h1, h2 { text-align: center; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card {
+      background: var(--bg-card);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
     label { display: block; margin: 10px 0 5px; }
-    input, select, button { padding: 8px; width: 100%; margin-bottom: 15px; }
-    button { background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .result { background: #e9f5e9; padding: 10px; border-radius: 6px; margin-top: 10px; }
-    footer { margin-top: 30px; text-align: center; font-size: 0.9em; color: #555; }
+    input, select, button {
+      padding: 8px;
+      width: 100%;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: var(--bg-card);
+      color: var(--text);
+    }
+    button {
+      background: var(--accent);
+      color: var(--text-inv);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: var(--accent-hover);
+    }
+    .result {
+      background: #3a3a3a;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.9em;
+      color: var(--text);
+    }
+    .toggle-theme {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      background: var(--accent);
+      color: var(--text-inv);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+      margin-top: 15px;
+    }
   </style>
 </head>
-<body>
+<body class="dark-mode">
+  <button class="toggle-theme" id="btnToggle">☀️</button>
+
   <h1>Калькулятор ФОП та Зарплати 2025</h1>
 
   <div class="card">
     <h2>Калькулятор зарплати</h2>
-    <label for="gross">Зарплата (грязна), грн</label>
-    <input type="number" id="gross" placeholder="Наприклад: 30000">
+    <label for="gross">Зарплата (брутто), грн</label>
+    <input type="number" id="gross" placeholder="Наприклад: 30000" />
+    <label for="currency">Конвертувати у валюту:</label>
+    <select id="currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="PLN">PLN</option>
+    </select>
     <button onclick="calcSalary()">Розрахувати</button>
     <div id="salaryResult" class="result"></div>
+    <canvas id="salaryChart"></canvas>
   </div>
 
   <div class="card">
@@ -37,45 +114,119 @@
       <option value="3">3 група</option>
     </select>
     <label for="income">Місячний дохід (грн)</label>
-    <input type="number" id="income" placeholder="Для 3 групи, наприклад: 50000">
-    <label><input type="checkbox" id="vat"> Платник ПДВ (3 група)</label>
+    <input type="number" id="income" placeholder="Наприклад: 50000" />
+    <label><input type="checkbox" id="vat" /> Платник ПДВ (3 група)</label>
+    <label for="currencyFOP">Конвертувати у валюту:</label>
+    <select id="currencyFOP">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="PLN">PLN</option>
+    </select>
     <button onclick="calcFOP()">Розрахувати</button>
     <div id="fopResult" class="result"></div>
+    <canvas id="fopChart"></canvas>
   </div>
 
   <footer>
-    <p>Оновлено: вересень 2025. Дані приблизні, для точних розрахунків звертайтеся до бухгалтера. Джерело: <a href="https://tax.gov.ua" target="_blank">ДПС України</a>.</p>
+    <p>Оновлено: вересень 2025. Дані приблизні, звертайтеся до бухгалтера. Джерело: <a href="https://tax.gov.ua" target="_blank">ДПС України</a>.</p>
   </footer>
 
   <script>
-    function calcSalary() {
-      const gross = parseFloat(document.getElementById('gross').value);
+    document.getElementById("btnToggle").addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const isDark = document.body.classList.contains("dark-mode");
+      document.getElementById("btnToggle").textContent = isDark ? "☀️" : "🌙";
+      updateChartTheme(salaryChart);
+      updateChartTheme(fopChart);
+    });
+
+    let salaryChart = null;
+    let fopChart = null;
+
+    function updateChartTheme(chart) {
+      if (!chart) return;
+      const isDark = document.body.classList.contains("dark-mode");
+      chart.options.plugins.legend.labels.color = isDark ? "#eeeeee" : "#222222";
+      chart.update();
+    }
+
+    async function convertToCurrency(amountUAH, currencyCode) {
+      try {
+        const res = await fetch(`https://api.exchangerate.host/latest?base=UAH&symbols=${currencyCode}`);
+        const data = await res.json();
+        const rate = data.rates[currencyCode];
+        return (amountUAH * rate).toFixed(2);
+      } catch {
+        return null;
+      }
+    }
+
+    async function calcSalary() {
+      const gross = parseFloat(document.getElementById("gross").value);
       if (isNaN(gross) || gross <= 0) {
-        document.getElementById('salaryResult').innerHTML = "Введіть коректну суму";
+        document.getElementById("salaryResult").innerHTML = "Введіть коректну суму";
         return;
       }
-      const pdf = gross * 0.18; // ПДФО 18%
-      const vz = gross * 0.05;  // Військовий збір 5%
+      const pdf = gross * 0.18;
+      const vz = gross * 0.05;
       const net = gross - pdf - vz;
-      const esv = gross * 0.22; // ЄСВ роботодавця
+      const esv = gross * 0.22;
 
-      document.getElementById('salaryResult').innerHTML = `
+      const currency = document.getElementById("currency").value;
+      const netConverted = await convertToCurrency(net, currency);
+
+      document.getElementById("salaryResult").innerHTML = `
         <b>Результат:</b><br>
         ПДФО: ${pdf.toFixed(2)} грн<br>
         Військовий збір: ${vz.toFixed(2)} грн<br>
-        Зарплата на руки: ${net.toFixed(2)} грн<br>
+        Зарплата на руки: ${net.toFixed(2)} грн (${netConverted ?? "—"} ${currency})<br>
         Витрати роботодавця (ЄСВ): ${esv.toFixed(2)} грн
       `;
+
+      const ctx = document.getElementById("salaryChart").getContext("2d");
+      const data = {
+        labels: ["ПДФО", "Військ. збір", "Чиста зарплата", "ЄСВ"],
+        datasets: [{
+          data: [pdf, vz, net, esv],
+          backgroundColor: [
+            'rgba(255,99,132,0.6)',
+            'rgba(54,162,235,0.6)',
+            'rgba(75,192,192,0.6)',
+            'rgba(255,206,86,0.6)'
+          ],
+          borderColor: [
+            'rgba(255,99,132,1)',
+            'rgba(54,162,235,1)',
+            'rgba(75,192,192,1)',
+            'rgba(255,206,86,1)'
+          ],
+          borderWidth: 1
+        }]
+      };
+      const config = {
+        type: "pie",
+        data,
+        options: {
+          plugins: {
+            legend: {
+              labels: {
+                color: "#eeeeee"
+              }
+            }
+          }
+        }
+      };
+      if (salaryChart) salaryChart.destroy();
+      salaryChart = new Chart(ctx, config);
     }
 
-    function calcFOP() {
-      const group = document.getElementById('group').value;
-      const income = parseFloat(document.getElementById('income').value) || 0;
-      const vat = document.getElementById('vat').checked;
+    async function calcFOP() {
+      const group = document.getElementById("group").value;
+      const income = parseFloat(document.getElementById("income").value) || 0;
+      const vat = document.getElementById("vat").checked;
 
-      let edp = 0; // єдиний податок
-      let vz = 0; // військовий збір
-      const esv = 1760; // мінімальний ЄСВ 2025
+      let edp = 0, vz = 0;
+      const esv = 1760;
 
       if (group === "1") {
         edp = 302.80;
@@ -89,14 +240,50 @@
       }
 
       const total = edp + vz + esv;
+      const currency = document.getElementById("currencyFOP").value;
+      const totalConverted = await convertToCurrency(total, currency);
 
-      document.getElementById('fopResult').innerHTML = `
+      document.getElementById("fopResult").innerHTML = `
         <b>Результат:</b><br>
         Єдиний податок: ${edp.toFixed(2)} грн<br>
         Військовий збір: ${vz.toFixed(2)} грн<br>
         ЄСВ: ${esv.toFixed(2)} грн<br>
-        <b>Всього податків на місяць:</b> ${total.toFixed(2)} грн
+        <b>Всього податків на місяць:</b> ${total.toFixed(2)} грн (${totalConverted ?? "—"} ${currency})
       `;
+
+      const ctx = document.getElementById("fopChart").getContext("2d");
+      const data = {
+        labels: ["Єдиний податок", "Військ. збір", "ЄСВ"],
+        datasets: [{
+          data: [edp, vz, esv],
+          backgroundColor: [
+            'rgba(153,102,255,0.6)',
+            'rgba(255,159,64,0.6)',
+            'rgba(255,205,86,0.6)'
+          ],
+          borderColor: [
+            'rgba(153,102,255,1)',
+            'rgba(255,159,64,1)',
+            'rgba(255,205,86,1)'
+          ],
+          borderWidth: 1
+        }]
+      };
+      const config = {
+        type: "pie",
+        data,
+        options: {
+          plugins: {
+            legend: {
+              labels: {
+                color: "#eeeeee"
+              }
+            }
+          }
+        }
+      };
+      if (fopChart) fopChart.destroy();
+      fopChart = new Chart(ctx, config);
     }
   </script>
 </body>
