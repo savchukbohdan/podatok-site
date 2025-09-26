@@ -1,209 +1,317 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MP4 → MP3 Онлайн Конвертер (Мультифайли)</title>
-<meta name="description" content="Перетворіть MP4 у MP3 онлайн безкоштовно. Підтримка декількох файлів одночасно. Конвертація у браузері, без завантаження файлів на сервер.">
-<style>
-:root {
-  --bg: #f9fafb;
-  --primary: #2563eb;
-  --primary-hover: #1e40af;
-  --text: #111827;
-  --muted: #6b7280;
-  --radius: 14px;
-  --shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-body {
-  margin: 0;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-.card {
-  background: white;
-  padding: 32px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
-  animation: fadeIn 0.5s ease-out;
-}
-h1 {
-  margin-bottom: 8px;
-  font-size: 1.6rem;
-}
-p {
-  margin: 0 0 20px;
-  color: var(--muted);
-}
-input[type="file"] {
-  display: none;
-}
-label {
-  display: inline-block;
-  padding: 10px 18px;
-  background: #f3f4f6;
-  border-radius: var(--radius);
-  cursor: pointer;
-  margin-bottom: 4px;
-  transition: 0.2s, border 0.2s;
-  border: 2px dashed transparent;
-}
-label.selected {
-  border-color: #2563eb;
-  background: #e0e7ff;
-}
-button {
-  padding: 12px 24px;
-  font-size: 1rem;
-  border: none;
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-button:hover:not(:disabled) {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-}
-button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-#status {
-  margin-top: 16px;
-  font-size: 0.95rem;
-  color: var(--muted);
-  min-height: 24px;
-}
-#fileList {
-  margin-top: 8px;
-  color: #2563eb;
-  font-weight: 500;
-  text-align: left;
-}
-#fileList li {
-  margin-bottom: 4px;
-}
-select {
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  border: 1px solid #d1d5db;
-  margin-top: 8px;
-  font-size: 1rem;
-}
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MP4 → MP3 Онлайн Конвертер (Безкоштовно, Без Реклами)</title>
+  <meta name="description" content="Перетворіть MP4 у MP3 онлайн безкоштовно. Підтримка декількох файлів. Конвертація у браузері, без завантаження файлів на сервер.">
+  <meta name="keywords" content="mp4 у mp3, онлайн конвертер, відео в аудіо, безкоштовно, без реєстрації, без реклами">
+
+  <style>
+    :root {
+      --bg-light: #f9fafb;
+      --bg-dark: #1f2937;
+      --card-light: #ffffff;
+      --card-dark: #111827;
+      --text-light: #111827;
+      --text-dark: #f3f4f6;
+      --muted-light: #6b7280;
+      --muted-dark: #9ca3af;
+      --primary: #2563eb;
+      --primary-hover: #1e40af;
+      --radius: 14px;
+      --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .card {
+      background: var(--card-light);
+      padding: 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+      margin-top: 40px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark .card {
+      background: var(--card-dark);
+    }
+
+    h1, h2, h3 {
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted-light);
+    }
+
+    body.dark p {
+      color: var(--muted-dark);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px 18px;
+      background: #f3f4f6;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 4px;
+      border: 2px dashed transparent;
+    }
+
+    body.dark label {
+      background: #374151;
+      color: #f3f4f6;
+    }
+
+    label.selected {
+      border-color: var(--primary);
+      background: #e0e7ff;
+    }
+
+    body.dark label.selected {
+      background: #1e3a8a;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 16px;
+      font-size: 0.95rem;
+      min-height: 24px;
+    }
+
+    #fileList {
+      margin-top: 8px;
+      color: var(--primary);
+      font-weight: 500;
+      text-align: left;
+    }
+
+    #fileList li {
+      margin-bottom: 4px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid #d1d5db;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .theme-toggle {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: var(--primary);
+    }
+
+    section {
+      max-width: 700px;
+      margin: 60px auto;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: inherit;
+      padding: 0 20px;
+    }
+
+    ul, ol {
+      text-align: left;
+      padding-left: 20px;
+    }
+
+  </style>
 </head>
 <body>
-<div class="card">
-  <h1>🎵 MP4 → MP3</h1>
-  <p>Перетворіть декілька відео MP4 у MP3 прямо в браузері. Безкоштовно і без реєстрації.</p>
 
-  <input id="videoInput" type="file" accept="video/*" multiple>
-  <label for="videoInput" id="fileLabel">📂 Оберіть відео</label>
-  <ul id="fileList"></ul>
+  <div class="card">
+    <h1>🎵 MP4 → MP3</h1>
+    <p>Перетворіть декілька відео MP4 у MP3 прямо в браузері. Безкоштовно і без реєстрації.</p>
 
-  <div style="margin: 16px 0;">
-    <label for="bitrate">Бітрейт MP3:</label><br>
-    <select id="bitrate">
-      <option value="320k">320 kbps (висока якість)</option>
-      <option value="256k">256 kbps</option>
-      <option value="192k" selected>192 kbps (рекомендовано)</option>
-      <option value="128k">128 kbps</option>
-      <option value="96k">96 kbps (низька якість)</option>
-      <option value="64k">64 kbps</option>
-    </select>
+    <input id="videoInput" type="file" accept="video/*" multiple>
+    <label for="videoInput" id="fileLabel">📂 Оберіть відео</label>
+    <ul id="fileList"></ul>
+
+    <div style="margin: 16px 0;">
+      <label for="bitrate">Бітрейт MP3:</label><br>
+      <select id="bitrate">
+        <option value="320k">320 kbps (висока якість)</option>
+        <option value="256k">256 kbps</option>
+        <option value="192k" selected>192 kbps (рекомендовано)</option>
+        <option value="128k">128 kbps</option>
+        <option value="96k">96 kbps</option>
+        <option value="64k">64 kbps</option>
+      </select>
+    </div>
+
+    <button id="convertBtn" disabled>Завантаження ffmpeg...</button>
+    <div id="status">Ініціалізація...</div>
+    <div class="theme-toggle" onclick="toggleTheme()">🌓 Змінити тему</div>
   </div>
-  
-  <button id="convertBtn" disabled>Завантаження ffmpeg...</button>
-  <div id="status">Ініціалізація...</div>
-</div>
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
-<script>
-const { createFFmpeg, fetchFile } = FFmpeg;
-const ffmpeg = createFFmpeg({
-  log: false,
-  corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
-  mainName: 'main'
-});
+  <!-- SEO текст -->
+  <section>
+    <h2>Безкоштовний онлайн-конвертер MP4 у MP3</h2>
+    <p>Хочете швидко <strong>перетворити MP4 у MP3 онлайн</strong>? Наш сервіс дозволяє зробити це прямо у вашому браузері, без необхідності завантажувати програми або реєструватися. Просто оберіть відеофайли MP4, натисніть "Конвертувати" — і за кілька секунд ви отримаєте якісний аудіофайл MP3.</p>
 
-const input = document.getElementById('videoInput');
-const btn = document.getElementById('convertBtn');
-const status = document.getElementById('status');
-const fileLabel = document.getElementById('fileLabel');
-const fileListDisplay = document.getElementById('fileList');
+    <h3>Переваги нашого конвертера:</h3>
+    <ul>
+      <li>🚀 Швидка конвертація прямо в браузері</li>
+      <li>🆓 Повністю безкоштовно — без обмежень</li>
+      <li>🔒 Приватність — файли не передаються на сервер</li>
+      <li>📱 Працює на всіх пристроях: ПК, Mac, Android, iPhone</li>
+      <li>🎧 Вибір якості MP3: 64–320 кбіт/с</li>
+      <li>🗂 Підтримка декількох файлів одночасно</li>
+    </ul>
 
-let isLoaded = false;
+    <h3>Як перетворити відео MP4 у MP3?</h3>
+    <ol>
+      <li>Натисніть кнопку "📂 Оберіть відео" і виберіть один або кілька MP4-файлів.</li>
+      <li>Оберіть бажаний бітрейт MP3 — наприклад, 192 або 320 кбіт/с.</li>
+      <li>Натисніть "Конвертувати" і зачекайте кілька секунд.</li>
+      <li>Ваш MP3 буде автоматично завантажено на пристрій.</li>
+    </ol>
 
-ffmpeg.setProgress(({ ratio }) => {
-  status.innerText = `Прогрес: ${(ratio * 100).toFixed(0)}%`;
-});
+    <h3>Безпечний і анонімний</h3>
+    <p>Ми не зберігаємо ваші файли. Уся конвертація відбувається <strong>локально у браузері</strong> за допомогою технології <code>ffmpeg.wasm</code>.</p>
+  </section>
 
-async function loadFFmpeg() {
-  if (isLoaded) return;
-  status.innerText = 'Завантаження ядра...';
-  await ffmpeg.load();
-  isLoaded = true;
-  btn.disabled = false;
-  btn.innerText = 'Конвертувати';
-  status.innerText = 'Готово до роботи ✅';
-}
-window.addEventListener('load', loadFFmpeg);
+  <!-- FFmpeg + логіка -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({
+      log: false,
+      corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+      mainName: 'main'
+    });
 
-input.addEventListener('change', () => {
-  const files = input.files;
-  fileListDisplay.innerHTML = '';
-  if (files.length > 0) {
-    fileLabel.classList.add('selected');
-    for (let i = 0; i < files.length; i++) {
-      const li = document.createElement('li');
-      li.textContent = files[i].name;
-      fileListDisplay.appendChild(li);
+    const input = document.getElementById('videoInput');
+    const btn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const fileLabel = document.getElementById('fileLabel');
+    const fileListDisplay = document.getElementById('fileList');
+    const bitrateSelector = document.getElementById('bitrate');
+
+    let isLoaded = false;
+
+    ffmpeg.setProgress(({ ratio }) => {
+      status.innerText = `Прогрес: ${(ratio * 100).toFixed(0)}%`;
+    });
+
+    async function loadFFmpeg() {
+      if (isLoaded) return;
+      status.innerText = 'Завантаження ядра...';
+      await ffmpeg.load();
+      isLoaded = true;
+      btn.disabled = false;
+      btn.innerText = 'Конвертувати';
+      status.innerText = 'Готово до роботи ✅';
     }
-  } else {
-    fileLabel.classList.remove('selected');
-  }
-});
 
-btn.addEventListener('click', async () => {
-  const files = input.files;
-  if (!files.length) return alert('Оберіть відеофайли');
-  btn.disabled = true;
-  const bitrate = document.getElementById('bitrate').value;
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      status.innerText = `Конвертація ${i+1}/${files.length}: ${file.name}`;
-      ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-      await ffmpeg.run('-i', 'input.mp4', '-vn', '-acodec', 'libmp3lame', '-b:a', bitrate, 'output.mp3');
-      const data = ffmpeg.FS('readFile', 'output.mp3');
-      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = (file.name.replace(/\.[^/.]+$/, "") || 'output') + '.mp3';
-      a.click();
+    window.addEventListener('load', () => {
+      loadFFmpeg();
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+      }
+    });
+
+    input.addEventListener('change', () => {
+      const files = input.files;
+      fileListDisplay.innerHTML = '';
+      if (files.length > 0) {
+        fileLabel.classList.add('selected');
+        for (let i = 0; i < files.length; i++) {
+          const li = document.createElement('li');
+          li.textContent = files[i].name;
+          fileListDisplay.appendChild(li);
+        }
+      } else {
+        fileLabel.classList.remove('selected');
+      }
+    });
+
+    btn.addEventListener('click', async () => {
+      const files = input.files;
+      if (!files.length) return alert('Оберіть відеофайли');
+      btn.disabled = true;
+      const bitrate = bitrateSelector.value;
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          status.innerText = `Конвертація ${i + 1}/${files.length}: ${file.name}`;
+          ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+          await ffmpeg.run('-i', 'input.mp4', '-vn', '-acodec', 'libmp3lame', '-b:a', bitrate, 'output.mp3');
+          const data = ffmpeg.FS('readFile', 'output.mp3');
+          const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = (file.name.replace(/\.[^/.]+$/, "") || 'output') + '.mp3';
+          a.click();
+        }
+        status.innerText = 'Усі файли готові ✅';
+      } catch (err) {
+        console.error(err);
+        status.innerText = 'Сталася помилка ❌';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
     }
-    status.innerText = 'Усі файли готові ✅';
-  } catch (err) {
-    console.error(err);
-    status.innerText = 'Сталася помилка ❌';
-  } finally {
-    btn.disabled = false;
-  }
-});
-</script>
+  </script>
 </body>
 </html>
