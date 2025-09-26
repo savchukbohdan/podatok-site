@@ -30,7 +30,7 @@ body {
   padding: 32px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  max-width: 520px;
+  max-width: 500px;
   width: 100%;
   text-align: center;
   animation: fadeIn 0.5s ease-out;
@@ -89,32 +89,9 @@ button:disabled {
   color: #2563eb;
   font-weight: 500;
   text-align: left;
-  max-height: 120px;
-  overflow-y: auto;
-  padding-left: 20px;
 }
 #fileList li {
   margin-bottom: 4px;
-}
-#progressContainer {
-  margin-top: 16px;
-}
-#currentProgressContainer {
-  background:#e5e7eb;
-  border-radius:10px;
-  height:14px;
-  overflow:hidden;
-}
-#currentProgress {
-  height:14px;
-  width:0%;
-  background:#2563eb;
-  transition: width 0.2s;
-}
-#fileProgress {
-  margin-top:6px;
-  font-size:0.9rem;
-  color:#6b7280;
 }
 @keyframes fadeIn {
   from {opacity: 0; transform: translateY(10px);}
@@ -132,14 +109,6 @@ button:disabled {
   <ul id="fileList"></ul>
   
   <button id="convertBtn" disabled>Завантаження ffmpeg...</button>
-  
-  <div id="progressContainer">
-    <div id="currentProgressContainer">
-      <div id="currentProgress"></div>
-    </div>
-    <div id="fileProgress">0 / 0 файлів</div>
-  </div>
-
   <div id="status">Ініціалізація...</div>
 </div>
 
@@ -157,17 +126,14 @@ const btn = document.getElementById('convertBtn');
 const status = document.getElementById('status');
 const fileLabel = document.getElementById('fileLabel');
 const fileListDisplay = document.getElementById('fileList');
-const currentProgress = document.getElementById('currentProgress');
-const fileProgress = document.getElementById('fileProgress');
 
 let isLoaded = false;
 
-// Поточний прогрес ffmpeg
 ffmpeg.setProgress(({ ratio }) => {
-  currentProgress.style.width = `${(ratio*100).toFixed(1)}%`;
+  status.innerText = `Прогрес: ${(ratio * 100).toFixed(0)}%`;
 });
 
-// Завантаження ffmpeg при старті
+// Завантажуємо ffmpeg при завантаженні сторінки
 async function loadFFmpeg() {
   if (isLoaded) return;
   status.innerText = 'Завантаження ядра...';
@@ -179,7 +145,7 @@ async function loadFFmpeg() {
 }
 window.addEventListener('load', loadFFmpeg);
 
-// Показ списку файлів
+// Показ списку обраних файлів
 input.addEventListener('change', () => {
   const files = input.files;
   fileListDisplay.innerHTML = '';
@@ -195,7 +161,7 @@ input.addEventListener('change', () => {
   }
 });
 
-// Конвертація всіх обраних файлів з прогресом
+// Конвертація всіх обраних файлів
 btn.addEventListener('click', async () => {
   const files = input.files;
   if (!files.length) return alert('Оберіть відеофайли');
@@ -203,13 +169,9 @@ btn.addEventListener('click', async () => {
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      fileProgress.innerText = `${i+1} / ${files.length} файлів`;
-      status.innerText = `Конвертація: ${file.name}`;
-      currentProgress.style.width = '0%';
-
+      status.innerText = `Конвертація ${i+1}/${files.length}: ${file.name}`;
       ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
       await ffmpeg.run('-i', 'input.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'output.mp3');
-      
       const data = ffmpeg.FS('readFile', 'output.mp3');
       const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
       const a = document.createElement('a');
@@ -218,8 +180,6 @@ btn.addEventListener('click', async () => {
       a.click();
     }
     status.innerText = 'Усі файли готові ✅';
-    fileProgress.innerText = `${files.length} / ${files.length} файлів`;
-    currentProgress.style.width = '100%';
   } catch (err) {
     console.error(err);
     status.innerText = 'Сталася помилка ❌';
