@@ -1,98 +1,232 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MP4 → MP3 — тест</title>
-  <meta name="description" content="Тестовий MP4→MP3 конвертер на ffmpeg.wasm (single-thread core)" />
-  <style>
-    body{font-family:sans-serif;padding:24px;text-align:center}
-    .box{max-width:560px;margin:18px auto;padding:18px;border:1px solid #ddd;border-radius:8px}
-    button{padding:8px 14px;border-radius:6px;border:none;background:#2b8a3e;color:#fff;cursor:pointer}
-    button:disabled{background:#999;cursor:default}
-    #status{margin-top:12px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MP4 → MP3 Онлайн Конвертер (Мультифайли)</title>
+<meta name="description" content="Перетворіть MP4 у MP3 онлайн безкоштовно. Підтримка декількох файлів одночасно. Конвертація у браузері, без завантаження файлів на сервер.">
+<style>
+:root {
+  --bg: #f9fafb;
+  --primary: #2563eb;
+  --primary-hover: #1e40af;
+  --text: #111827;
+  --muted: #6b7280;
+  --radius: 14px;
+  --shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.card {
+  background: white;
+  padding: 32px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+h1 {
+  margin-bottom: 8px;
+  font-size: 1.6rem;
+}
+p {
+  margin: 0 0 20px;
+  color: var(--muted);
+}
+input[type="file"] {
+  display: none;
+}
+label {
+  display: inline-block;
+  padding: 10px 18px;
+  background: #f3f4f6;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: 0.2s, border 0.2s;
+  border: 2px dashed transparent;
+}
+label.selected {
+  border-color: #2563eb;
+  background: #e0e7ff;
+}
+button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+button:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+#status {
+  margin-top: 16px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  min-height: 24px;
+}
+#fileList {
+  margin-top: 8px;
+  color: #2563eb;
+  font-weight: 500;
+  text-align: left;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-left: 20px;
+}
+#fileList li {
+  margin-bottom: 4px;
+}
+#progressContainer {
+  margin-top: 16px;
+}
+#currentProgressContainer {
+  background:#e5e7eb;
+  border-radius:10px;
+  height:14px;
+  overflow:hidden;
+}
+#currentProgress {
+  height:14px;
+  width:0%;
+  background:#2563eb;
+  transition: width 0.2s;
+}
+#fileProgress {
+  margin-top:6px;
+  font-size:0.9rem;
+  color:#6b7280;
+}
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+</style>
 </head>
 <body>
-  <h1>MP4 → MP3 (тест)</h1>
-  <div class="box">
-    <input id="videoInput" type="file" accept="video/*" />
-    <br/>
-    <button id="convertBtn" disabled>Завантаження ffmpeg...</button>
-    <p id="status">Сторінка ініціалізується...</p>
+<div class="card">
+  <h1>🎵 MP4 → MP3</h1>
+  <p>Перетворіть декілька відео MP4 у MP3 прямо в браузері. Безкоштовно і без реєстрації.</p>
+
+  <input id="videoInput" type="file" accept="video/*" multiple>
+  <label for="videoInput" id="fileLabel">📂 Оберіть відео</label>
+  <ul id="fileList"></ul>
+  
+  <button id="convertBtn" disabled>Завантаження ffmpeg...</button>
+  
+  <div id="progressContainer">
+    <div id="currentProgressContainer">
+      <div id="currentProgress"></div>
+    </div>
+    <div id="fileProgress">0 / 0 файлів</div>
   </div>
 
-  <!-- ffmpeg wasm wrapper -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <div id="status">Ініціалізація...</div>
+</div>
 
-  <script>
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    // single-thread core (менше проблем із cross-origin isolation)
-    const ffmpeg = createFFmpeg({
-      log: true,
-      corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
-      mainName: 'main' // для core-st інколи потрібно
-    });
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script>
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({
+  log: false,
+  corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+  mainName: 'main'
+});
 
-    const input = document.getElementById('videoInput');
-    const btn = document.getElementById('convertBtn');
-    const status = document.getElementById('status');
+const input = document.getElementById('videoInput');
+const btn = document.getElementById('convertBtn');
+const status = document.getElementById('status');
+const fileLabel = document.getElementById('fileLabel');
+const fileListDisplay = document.getElementById('fileList');
+const currentProgress = document.getElementById('currentProgress');
+const fileProgress = document.getElementById('fileProgress');
 
-    let isLoaded = false;
+let isLoaded = false;
 
-    // Показ прогресу
-    ffmpeg.setProgress(({ ratio }) => {
-      status.innerText = `Прогрес ffmpeg: ${(ratio * 100).toFixed(1)}%`;
-    });
+// Поточний прогрес ffmpeg
+ffmpeg.setProgress(({ ratio }) => {
+  currentProgress.style.width = `${(ratio*100).toFixed(1)}%`;
+});
 
-    async function loadFFmpeg() {
-      if (isLoaded) return;
-      try {
-        status.innerText = 'Завантаження ffmpeg (може зайняти кілька сек)...';
-        await ffmpeg.load();
-        isLoaded = true;
-        btn.disabled = false;
-        btn.innerText = 'Конвертувати';
-        status.innerText = 'ffmpeg готовий. Оберіть файл.';
-        console.log('ffmpeg loaded');
-      } catch (err) {
-        console.error('Помилка завантаження ffmpeg:', err);
-        status.innerText = 'Помилка завантаження ffmpeg — подивіться консоль.';
-      }
+// Завантаження ffmpeg при старті
+async function loadFFmpeg() {
+  if (isLoaded) return;
+  status.innerText = 'Завантаження ядра...';
+  await ffmpeg.load();
+  isLoaded = true;
+  btn.disabled = false;
+  btn.innerText = 'Конвертувати';
+  status.innerText = 'Готово до роботи ✅';
+}
+window.addEventListener('load', loadFFmpeg);
+
+// Показ списку файлів
+input.addEventListener('change', () => {
+  const files = input.files;
+  fileListDisplay.innerHTML = '';
+  if (files.length > 0) {
+    fileLabel.classList.add('selected');
+    for (let i = 0; i < files.length; i++) {
+      const li = document.createElement('li');
+      li.textContent = files[i].name;
+      fileListDisplay.appendChild(li);
     }
+  } else {
+    fileLabel.classList.remove('selected');
+  }
+});
 
-    // Завантажуємо одразу при завантаженні сторінки (щоб UX був кращим)
-    window.addEventListener('load', () => {
-      // Якщо тестуєте локально через file:// — краще запускати простий http сервер
-      loadFFmpeg();
-    });
+// Конвертація всіх обраних файлів з прогресом
+btn.addEventListener('click', async () => {
+  const files = input.files;
+  if (!files.length) return alert('Оберіть відеофайли');
+  btn.disabled = true;
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      fileProgress.innerText = `${i+1} / ${files.length} файлів`;
+      status.innerText = `Конвертація: ${file.name}`;
+      currentProgress.style.width = '0%';
 
-    btn.addEventListener('click', async () => {
-      if (!input.files.length) return alert('Виберіть відеофайл');
-      btn.disabled = true;
-      status.innerText = 'Починаю конвертацію...';
-      try {
-        const file = input.files[0];
-        // записуємо у віртуальну FS
-        ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-        // приклад команди — екстрагуємо аудіо в mp3
-        await ffmpeg.run('-i', 'input.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'output.mp3');
-        const data = ffmpeg.FS('readFile', 'output.mp3');
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = (file.name.replace(/\.[^/.]+$/, "") || 'output') + '.mp3';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        status.innerText = 'Готово ✅';
-      } catch (err) {
-        console.error('Помилка під час конвертації:', err);
-        status.innerText = 'Помилка під час конвертації — подивіться консоль.';
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  </script>
+      ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+      await ffmpeg.run('-i', 'input.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'output.mp3');
+      
+      const data = ffmpeg.FS('readFile', 'output.mp3');
+      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (file.name.replace(/\.[^/.]+$/, "") || 'output') + '.mp3';
+      a.click();
+    }
+    status.innerText = 'Усі файли готові ✅';
+    fileProgress.innerText = `${files.length} / ${files.length} файлів`;
+    currentProgress.style.width = '100%';
+  } catch (err) {
+    console.error(err);
+    status.innerText = 'Сталася помилка ❌';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
 </body>
 </html>
