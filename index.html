@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Онлайн конвертер файлів — швидко і безкоштовно</title>
+  <meta name="description" content="Конвертуйте PDF, JPG, MP4, MP3, DOCX та інші формати онлайн. Без реєстрації.">
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 40px; }
+    .box { border: 2px dashed #888; padding: 30px; margin: 20px auto; max-width: 500px; border-radius: 10px; }
+    input { margin: 10px; }
+    button { padding: 10px 20px; margin: 10px; border: none; border-radius: 6px; background: #4CAF50; color: white; cursor: pointer; }
+    button:disabled { background: gray; }
+  </style>
+</head>
+<body>
+  <h1>Онлайн конвертер файлів</h1>
+  <p>Простий конвертер PDF, зображень та відео прямо у вашому браузері.</p>
+
+  <div class="box">
+    <h2>MP4 → MP3</h2>
+    <input type="file" id="videoInput" accept="video/mp4">
+    <button id="convertBtn">Конвертувати</button>
+    <p id="status"></p>
+  </div>
+
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    const input = document.getElementById('videoInput');
+    const button = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+
+    button.onclick = async () => {
+      if (!input.files.length) return alert('Виберіть файл!');
+      status.innerText = 'Завантаження ffmpeg...';
+      await ffmpeg.load();
+      const file = input.files[0];
+      ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+      status.innerText = 'Конвертація...';
+      await ffmpeg.run('-i', 'input.mp4', 'output.mp3');
+      const data = ffmpeg.FS('readFile', 'output.mp3');
+      const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'output.mp3';
+      a.click();
+      status.innerText = 'Готово ✅';
+    };
+  </script>
+</body>
+</html>
